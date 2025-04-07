@@ -71,5 +71,80 @@ TIP - 릴레이션(Relation)은 데이터들의 표(Table)의 형태로 표현�
 
 
 
+
 - SELECT문
+  - 테이블에 입련된 데이터를 조회 하기 위해서 사용
+  - 특정 칼럼(Column) 혹은 행만 조회할수 잇다.
+ 
+    ```
+    SELECT (조회를 원하는 칼럼(Column)을 선택한다.)
+    FROM (원하는 테이블을 지정한다 ex: EMP)
+    WHERE (원하는 데이터의 조건 지정 ex: 사원번호 = 1000);
+
+    ```
+TIP -  칼럼(Column)지정시 '*'로 표현하면 모든 칼럼을 선택한다는 뜻이다.
+
+ - 정렬(ORDER BY=> ASC(오름차순) or DESC(내림차순))
+    - ORDER BY를 같이 사용할수 있다.(오름차순(Ascending) 혹은 내림차순(Descending)으로 출력한다.)
+    - 정렬의 시점은 모든 실행이 끝난 후에 데이터를 출력해 주기 바로 전이다.
+    - ORDER BY는 데이터베이스 메모리를 많이 사용하게 된다. 대량의 데이터에는 성능 저하가 발생한다.
+    - ORACLE에서는 SORT_AREA_SIZE를 사용할수 있다.(다만 데이터가 너무 작으면 성능 저하가 발생한다.)
+    - 정렬 회피하기 위해서는 인덱스(Index)를 생성할때 사용ㅎ자가 원하는 형태로 오름차순 혹은 내림차순으로 생성해야한다.
+    - 기본적으로 오름차순으로 정렬된다.
+      
+      ```
+      ex)
+      SELECT *
+      FROM EMP
+      ORDER BY ENAME (ASC), SAL DESC
+      => EMP테이블의 모든 컬럼을 조회하는데 이때 ENAME 컬럼은 오름차순으로 SAL칼럼은 내림차순으로 조회하겠다.
+      ```
+
+    - Index를 사용한 정렬 회피
+       - 정렬은 ORCLE 데이터베이스에 부하를 주므로, 인덱스를 사용해서 ORDER BY를 회피할수 있다.
+     ```
+     ex)
+     CREATE TABLE EMP(
+      empno number(10) primary key,
+      ename varchar2(20),
+      sal number(10)
+     );
+
+     INSERT INTO EMP VALUES(1000, '임베스트', 20000);
+     INSERT INTO EMP VALUES(1001, '조조', 20000);
+     INSERT INTO EMP VALUES(1002, '관우', 20000);
+     ```
+       - 다음과 같이 기본키인 empno로인해 자동으로 오름차순 인덱스가 생성된다.
+
+     ```
+     another ex) Oracle SQL
+
+     SELECT /*+ INDEX_DESC(A) */
+     FROM EMP A;
+     ```
+
+     - 다음과 같은 예를 보면 /*+ INDEX_DESC(A) */(내림차순)를 통해 EMP 테이블에서 생성된 인덱스를 내림차순으로 읽게 지정한다.
+     - 따라서 ORDER BY 구문을 사용하지 않아도 된다.
+
+    ★ **컬럼**을 정렬할건지 **인덱스**를 정렬한건지는 다른것이다. 주의!!
+
+
+
+ - DISTINCT와 Alias
+    - DISTINCT는 칼럼(Column)앞에 지정하여 중복된 데이터를 한번만 조회한다.
+    - Alias(별치)은 테이블명이나 칼럼(Column)명이 너무 길어서 간략하게 사용할때 사용한다.
   
+      ```
+      ex)
+      SELECT ENAME AS "이름" FROM EMP a
+      WHERE a.EMPNO=1000;
+
+      다음과 같을 경우 `a`를 테이블명 처럼 사용하고 칼럼명은 "이름"으로 출력된다.
+      ```
+
+
+
+ - WHERE문 사용
+    - 
+
+
