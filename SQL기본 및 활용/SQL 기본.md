@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/2ff9e5ac-cdc7-4e47-a571-4f159c6bab34)![image](https://github.com/user-attachments/assets/a30d5848-f579-4d16-9a28-713bc3e14bd0)
+
 # 관계형 데이터베이스(Relatioin DataBase)
  - 1970년 E.F. Codd박사의 논문에 처음 소개 되었다
  - 릴레이션(Relation)과 조인 연산을 통해 합집합, 교집합, 차집합 등을 만들수 있다.
