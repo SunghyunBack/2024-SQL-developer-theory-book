@@ -143,6 +143,184 @@ TIP -  칼럼(Column)지정시 '*'로 표현하면 모든 칼럼을 선택한다
       ```
 
  - WHERE문 사용
-    - 
+    - Where문이 사용할수 있는 연산자는 비교, 부정, 논리, SQL, 부정 SQL 연산자가 잇다.
+  
+    - 비교 연산자
+      - = : 같다
+      - < : 작다
+      - <= : 작거나 같다
+      - > : 크다
+      - >= : 크거나 같다
+
+    - 부정 비교 연산자
+       - != : 같지 않다
+       - ^= : 같지 않다
+       - <> : 같지 않다
+       - NOT 컬럼명 = : 같지 않다 
+       - NOT 컬럼명 > : 같지 않다
+
+     - 논리 연산자
+       - AND : 조건을 모두 만족해야 참(TRUE)
+       - OR : 조건 중 하나만 만족해도 참(TRUE)
+       - NOT : 참이면 거짓으로 바꾸고 거짓이면 참으로 바꾼다.
+   
+     - SQL 연산자
+       - LIKE '%비교 문자열%' : 비교 문자열을 조회한다. '%'는 모든 값을 의미한다.
+       - BETWEEN A AND B : A와 B 사이의 값을 조회한다.
+       - IN(list) : OR를 의미하며 list 값 중에 하나만 일치해도 조회한다.
+       - IS NULL : NULL값을 조회한다.
+         
+     - 부정 SQL 연산자
+       - NOT BETWEEN A AND B : A와 B사이의 해당되지 않는 값을 조회한다.
+       - NOT IN(list) : list와 불일치한 것을 조회한다.
+       - IS NOT NULL : NULL값이 아닌것을 조회한다.
+      
+    ```
+    ex)
+    SELECT *
+    FROM EMP
+    WHERE EMPNO = 1000
+     AND SAL >= 1000;
+    EMP 테이블에서 컬럼 EMPNO의 값이 1000이며 컬럼 SAL의 값이 1000이상인 행을 조회한다.
+    ```
 
 
+ - LIKE문 사용
+   - 와일드 카드를 사용해서 데이터를 조회할수 있다.
+  
+   - 와일드 카드
+     - % : 어떤 문자를 포함한 모든 것을 조회한다. ex) '조%'는 '조'로 시작하는 모든 문자를 조회한다.
+     - _(Underscore) : 한 개인 단일 문자를 의미한다.
+    
+  ```
+  ex)
+SELECT *
+FROM EMP
+WHERE ENAME LIKE 'test%";
+ EMP테이블에서 칼럼이름이 ENAME의 값중 test가 들어간 모든 행을 조회한다.
+
+"1%" : 1로 끝나는 의미
+"%est%" : 중간에 'est'가 있는 모든 것
+"test_" : test로 시작하고 하나의 글자만 더 있는 것
+만약 LIKE에 와일드 카드를 생략한다면 "="와 같다.
+  ```
+
+- BETWEEN문 사용
+  - 지정된범위에 있는 값을 조회한다.
+  - "BETWEEN 100 and 200"은 100rhk 200을 포함하며 사이의 값을 조회한다.
+ 
+  ```
+  SELECT *
+  FROM EMP
+  WHERE SAL BETWEEN 1000 AND 2000;
+
+  EMP테이블에서 컬럼이름이 SAL인 행중 값이 1000<=  <=2000인 행을 조회한다.
+
+  만약 BETWEEN NOT 1000 AND 2000 => 1000 미만, 2000초과 값을 조횐한다.
+  ```
+
+ - IN문 사용
+   - "OR"의 의미를 가지고 있어서 하나의 조건만 만족해도 조회가 된다.
+
+   ```
+   SELECT *
+   FROM EMP
+   WHERE JOB IN ('CLERK','MANAGER');
+
+   EMP 테이블에서 JOB 컬럼 중 값이 CLERK 혹은 MANAGER인 값을 조회한다.
+   ```
+
+
+ - NULL값 조회
+   - NUll의 특징
+    - 모르는 값을 의미
+    - 값의 부재를 의미
+    - 숫자 혹은 날짜를 더하면 NULL이 된다.
+    - 어떤 값을 비교 할때, '알수 없음'이 반환된다.
+
+   - NULL값 조회
+     - IS NULL을 사용하여 조회한다.
+     - NULL값이 아니 것을 조회하고 싶을때는 IS NOT NULL을 사용한다.
+   ```
+   ex)
+   SELECT *
+   FROM EMP
+   WHERE MGR IS NULL;
+   EMP 테이블에서 MGR 컬럼의 값중 NULL인 행을 조회한다.
+   ```
+     
+  - NULL 관련 함수
+    - NVL 함수(ORACLE) : NULL이면 다른 값으로 바꾸는 함수. ex) "NVL(MGR,0)"은 칼럼이 MGR의 값이 NULL이면 0을 반환한다.
+    - NVL2 함수(ORACLE) : NVL 함수와 DECODE함수를 하나로 만든 것이다. "NVL2(MGR,1,0)"은 MGR 칼럼이 NULL이 아니면 1을 NULL이면 0을 반환한다.
+    - NULLIF 함수 (ORACLE, MS-SQL, MYSQL) : 두개의 값이 같으면 NULL을, 같지 않으면 첫번째 값을 반환한다. ex) "NULLIF(exp1,exp2)"은 exp1과 exp2가 같으면 NULL을 같지 않으면 exp1을 반환한다.
+    - COALESCE (ORACLE, MS-SQL) : NULL이 아닌 최초의 인자 값을 반환한다. ex) "COALESCE(exp1,exp2....)"은 exp1이 NULL이 아니면 exp1의 값을, 그렇지 않으면 그 뒤이 값이 NULL여부를판단하여 값을 반환한다.
+   
+
+
+ - GROUP 연산
+   - GROUP BY문
+     - 테이블에서 소규모 행을 그룹화하여 합계, 평균, 최댓값, 최솟값 등을 게산할수 잇다.
+     - HAVING구에 조건문을 사용한다.
+     - Grouping된결과에 대한 조건문을 사용한다.
+     - ORDER BY를 사용해서 정렬을 할수 있다.
+     ```
+     ex)
+     SELECT DEPTNO,SUM(SAL)
+     FROM EMP
+     GROUP BY DEPTNO
+
+     EMP테이블에서 DEPTNO의 컬럼을 그룹화 한 후 SAL컬럼에서 그룹화된 것들을 합하여 반환한다.
+     ```
+
+   - HAVING문 사용
+     - GROUP BY에 조건절을 사용하려면 HAVING을 사용해야한다.
+     - 만약 WHERE절에 조건문을 사용하게 되면 조건을 충족하지 못하는 데이터들은 GROUP BY 대상에서 제외된다.
+
+       ```
+       ex)
+       SELECT EPTNO, SUM(SAL)
+       FROM EMP
+       GROUP BY DEPTNO
+       HAVING SUM(SAL) >10000;
+
+       EMP테이블에서 DEPTNO로 그룹화 한 후 SAL컬럼을 합하여 합친 값이 10000초과인 값 조회
+       ```
+
+    - 집계함수
+      - COUNT() : 행 수를 조회. COUNT(*) 표현은 NULL을 계산하지만 COUNT(컬럼명)은 NULL값을 제외한다.
+      - SUM() : 합계를 계산
+      - AVG() : 평균을 계산
+      - MAX()와MIN() : 최댓값과 최솟값을 계산
+      - STDDEV() : 표준편차를 계산
+      - VARANCE() : 분산을 계산
+
+    - GROUP BY 사용 예제
+      ```
+      ex)
+      SELECT DEPTNO, MGR, AVG(SAL)
+      FROM EMP
+      GROUP BY DEPTNO, MGR;
+
+      EMP 테이블에서 DEPNO와 MGR 컬럼을 그룹홯 한 후 SAL 컬럼의 평균을 계산하여 행을 나타낸다.
+      ```
+
+      ```
+      ex)
+      SLECT JOB, SUM(SAL)
+      GROM EMP
+      GROUP BY JOB
+      HAVING SUM(SAL) >=1000;
+
+      EMP 테이블에서 JOB컬럼으로 그룹화 한 후 컬럼 SAL값 중 1000이상의 행으조회
+      ```
+
+      ```
+      ex)
+      SELECT DEPTNO, SUM(SAL)
+      FROM EMP
+      WHERE EMPNO BETWEEN 1000 AND 1003
+      GROUP BY DEPTNO;
+
+      EMP테이블에서 EMPNO컬럼의 값이 1000이상 1003이하의 값 중 DEPTNO의 값으로 그룹화 한것을 조회한다.
+      ```
+     
