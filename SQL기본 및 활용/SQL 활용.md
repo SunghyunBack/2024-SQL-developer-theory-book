@@ -113,10 +113,49 @@
     
     
 2. 조인(JOIN)
-   - 
+   - EQUI(등가) JOIN(교집합)
+     1)EQUI(등가) JOIN
+         - 여러개의 릴레이션을 사용해서 새로운 릴레이션을 만드는 과정
+         - 기본은 교집합을 만드는것이다.
+         - '='기호를 사용하여 테이블을 연결한다.
 
-  
-5. dd
-6. dd
-7. dd
-8. dd
+    ![image](https://github.com/user-attachments/assets/e58a192d-c4fc-4703-a85a-f3931cc2ec7a)
+
+
+       ex)
+       ```
+        SELECT *
+        FROM EMP, DEPT
+        WHERE EMP.DEPTNO = DEPT.DEPTNO
+            AND EMP.ENAME LIKE '임%'
+            ORDER BY ENAME
+
+        EMP, DEPT의 테이블에서 각 컬럼 DEPTNO를 기준으로 각각의 행을 이어 붙인후 ENAME칼럼에 '임'이 들어간 행을 오름차순으로 반환한다.
+       ```
+     2) INNER JOIN
+        - ON 문을 사용하여 테이블을 연결한다.
+     3) INTERSECT연산
+        - 
+
+   - NON-EQUI(비등가) JOIN
+   - OUTER JOIN
+   - CROSS JOIN
+   - UNION을 사용한 합집합 구현
+   - 차집합을 만드는 MINUS
+     
+
+
+
+
+
+
+
+
+2. 그룹함수(Group Function)
+3. 윈도우 함수(Window Function)
+4. Top N쿼리
+5. 계층형 조회(CONNECT BY)
+6. PIVOT과 UNPIVOT
+7. 테이블 파티션(Table Partition)
+8. 정규표현식(Regular Expression)
+ 
