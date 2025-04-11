@@ -132,13 +132,58 @@
 
         EMP, DEPT의 테이블에서 각 컬럼 DEPTNO를 기준으로 각각의 행을 이어 붙인후 ENAME칼럼에 '임'이 들어간 행을 오름차순으로 반환한다.
        ```
+    EQUI JOIN을 한후에 실행 계획을 확인해 보면 다음의 순서와 같다.
+     1. DEPT테이블과 EMP 테이블 전체를 읽은 후 다음에(TABLE ACCESS FULL) 해시함수를 사용해서 2개의 테이블을 연결한다.
+     2. 해시 함수는 테이블을 해시 메모리에 적재한 후에 해시 함수로써 연결한다.
+
+  TIP - 해시조인(HASH JOIN)
+       - 먼저 선행 테이블을 결정하고 선행 테이블에서 주어지 조건(Where구)에 해당하는 행을 선택한다.
+       - 해당 행이 선택되면 조인 키(Join Key)를 기준으로 해서 해시 함수를 사용해서 해시 테이블을 메인 메모리(Main Memory)에 생성하고 후행 테이블에서 주어진 조건에 만족하는 행을 찾는다.
+       - 후행 테이블의 조인 키를 사용해서 해시 함수를 적용하여 해당 버킷을 검색한다.
+        
      2) INNER JOIN
         - ON 문을 사용하여 테이블을 연결한다.
+          ```
+          SELECT *
+          FROM EMP INNER JOIN DEPT
+          ON EMP.DEPTNO =DEPT.DEPTNO
+          AND EMP.ENAME LIKE '임%'
+          ORDER BY ENAME;
+
+          EMP 테이블을 기준으로 EMP의 DEPTNO컬럼과 DEPT테이블의 DEPTNO컬럼을 연결하여 EMP의 ENAME의 값이 '임'이 들어가있는 행을 오름차순으로 반환해라
+          ```
      3) INTERSECT연산
-        - 
+        - 2개의 테이블에서 교집합을 조회한다.
+        - 공통된 값을 조회
+        ```
+        SELECT DEPTNO
+        FROM EMP
+        INTERSECT
+            SELECT DEPTNO FROM DEPT;
+
+        EMP 테이블의 DEPTNO컬럼을 기준으로 DEPT테이블의 DEPTNO의 컬럼과 비교하여 공통된 값을 조회한다.
+        ```
 
    - NON-EQUI(비등가) JOIN
+     - 2개의 테이블 간에 조인하는 경우 "="을 사용하지 않고 ">","<",">=",'"<=" 등을 사용한다.
+     - 즉 정확하게 일치 하지 않는것을 조인한다.
+       
    - OUTER JOIN
+     - 2개의 테이블 간에 교집합을 조회하고 한쪽 테이블에만 있는 데이터도 포함시켜서 조회한다.
+       ```
+       SELECT *
+       FROM DEPT, EMP
+       WHERE EMP.DEPTNO (+)=DEPT.DEPTNO;
+
+       테이블 DEPT와 EMP를 서로 비교하여 EMP테이블을 기준으로 DEPTNO의 값을 가진것들을 반환 할떄 EMP에는 없지만 DEPT에 있는 DEPTNO의 값도 같이 반환한다.
+
+       ```
+       ![image](https://github.com/user-attachments/assets/951a27a1-6952-483a-a575-e41819176ee0)
+
+
+
+
+       
    - CROSS JOIN
    - UNION을 사용한 합집합 구현
    - 차집합을 만드는 MINUS
