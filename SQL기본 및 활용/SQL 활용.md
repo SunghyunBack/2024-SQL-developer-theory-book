@@ -1,4 +1,4 @@
-
+![image](https://github.com/user-attachments/assets/584bdb09-be45-4ba7-9e37-3b182d541a83)
 
 
 1. 서브쿼리(Subquery)
@@ -238,15 +238,100 @@
        
    - 차집합을 만드는 MINUS
      - 2개의 테이블에서 차집합을 조회한다. 즉 먼저 쓴 SELECT문에는 있고 뒤에 쓰는 SELECT문에는 없는 집합을 조회한다.
+       ```
+       SELECT DEPTNO FROM DEPT
+       MINUS
+       SELECT DEPTNO FROM EMP;
+
+       DEPT 테이블의 DEPTNO컬럼과 EMP 테이블의 DEPTNO컬럼 2개를 비교해서 DEPT 테이블만 가지고 있는 값만 반환한다.
+       ```
+
+3. 그룹함수(Group Function)
+    - ROLLUP
+      - GROUP BY의 칼럼에 대해서 Subtotal을 만들어 준다.
+      - ROLLUP 할때 GROUP BY구에 컬럼이 2개 이상 오면 순서에 따라서 결과가 달라진다.
+        ```
+        SELECT DECODE(DEPTNO, NULL, '전체합계', DEPTNO), SUM(SAL)
+        FROM EMP
+        GROUP BY ROLLUP(DEPTNO);
+
+        DECODE함수 => DEPTNO의 값이 NULL이면 '전체합계'라는 텍스트를, NULL이 아니라면 DEPTNO라는 텍스트를 반환한다.
+        SAL의 값을 모두 합한다.
+        EMP 테이블에서 DEPTNO의 값으로 구룹화 하여 합계를 새로운 행을 만들어 반환한다.
+        새로운 행을 만드게 되면 DEPTNO의 값은 당연하게 NULL이기 때문에 '전체합계'라는 텍스트가 된다.
+        ```
+     ![image](https://github.com/user-attachments/assets/03de5537-083b-44a4-b0df-dab30c2ea5f7)
+
+      ```
+      SELECT DEPTNO, JOB, SUM(SAL)
+      FROM EMP
+      GROUP BY ROLLUP (DEPTNO, JOB);
+
+      EMP테이블에서 DETNO, JOB 별로, 전체합계가 모두 죄횐 된다.
+
+      ```
+![image](https://github.com/user-attachments/assets/7a3a7290-5521-4b6d-bfd8-d582223fbe56)
+
+
+    - GROUPING함수
+     - ROLLUP, CUBE, GROUPING SETS에서 생성되는 합계값을 구분하기 위해서 만들어진 함수이다.
+     - 소계, 합계 등이 계산되면 GROUPING 함수는 1을 반환하고 그렇지 않으면 0을 반환해서 합계값을 식별할수 있다.
+     ```
+     SELECT DEPTNO, GROUPING(DEPTNO),
+         JOB, GROUPING(JOB), SUM(SAL)
+     FROM EMP
+     GROUP BY ROLLUP(DEPTNO,JOB);
+
+     ```
+![image](https://github.com/user-attachments/assets/081c5772-124b-476e-9808-67bda7e2dfb1)
+
+    - GROUPING의 반환값을 통해 구분을 하게된다. 보고서 형식의 쿼리를 작성할때 유용하다.
+
+    ```
+    SELECT DEPTNO,
+     DECODE(GROUPING(DEPTNO),1,'전체합계') TOT, 
+     JOB,
+     DECODE(GROUPING(JOB),1,'부서합계') T_DEPT,
+     SUM(SAL)
+    FROM EMP
+    GROUP BY ROLLUP(DEPTNO, JOB);
+
+    EMP 테이블의 DEPTNO컬럼을 조회해서
+    TOT이름의 컬럼으로 DEPTNO의 GROUPING값이 1이면 '전체합계'를 아니면 null을 반환하며
+    T_DEPT이름의 컬럼으로 JOB의 GROUPING값이 1이면 '부서합계'를 아니면 null을 반환하며
+    DEPTNO, JOB를 구룹화한 행에 SUM(SAL)값을 반환해라
+    ```
+![image](https://github.com/user-attachments/assets/9a15b0ba-536f-4503-8e92-06f9d6d60b45)
+     
+    - GROUPING SETS 함수
+     - GROUP BY에 나오는 칼럼의 순서와 관계없이 다양한 소계를 만들수 있다.
+     - GROUP BY에 나오는 칼럼의 순서와 관계없이 개별적으로 모두 처리한다.
+     ```
+     SELECT DEPTNO, JOB,SUM(SAL)
+     FROM EMP
+     GROUP BY GROUPING SETS(DEPTNO,JOB);
+
+     EMP 테이블에서 DEPTNO, JOB< SUM(SAL)컬럼을 조회하는데 DEPTNO,JOB컬럼 가각 그룹화하여 합계를 반환해라
+     ```
+
+     
+    - CUBE 함수
+     - CUBE함수에 제시한 칼럼에 대해서 결합 가능한 모든 집계를 계산한다.
+     - 다차원 집계를 제공하여 다양하게 데이터를 분석할수 있게 한다.
+     - 조합할 수 있는 경우의 수가 모두 조합된다.
+     ```
+     SELECT DEPTNO, JOB, SUM(SAL)
+     FROM EMP
+     GROUP BY CUBE(DEPTNO, JOB);
+
+    EMP테이블에서 전체합계, DEPTNO 합계, JOB 합계 DEPTNO-JOB합계 모두 조회된다.
+     ```
+    ![image](https://github.com/user-attachments/assets/47e62384-5cb6-4951-8a48-6ea17f2725a0)
 
 
 
 
 
-
-
-
-2. 그룹함수(Group Function)
 3. 윈도우 함수(Window Function)
 4. Top N쿼리
 5. 계층형 조회(CONNECT BY)
