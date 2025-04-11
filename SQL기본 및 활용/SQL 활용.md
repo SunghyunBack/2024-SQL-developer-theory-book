@@ -182,12 +182,62 @@
 
 
 
+     - LEFT OUTER JOIN 과 RIGHT OUTER JOIN
+       1. LEFT OUTER JOIN
+          ```
+          SELECT *
+          FROM DEPT LEFT OUTER JOIN EMP
+          ON EMP.DETNO = DEPT.DEPTNO;
 
+         왼쪽에 있는 DEPT를 기준으로 조회
+          ```
+
+       2. RIGHT OUTER JOIN
+          ```
+          SELECT *
+          FROM DEPT RIGHT OUTER JOIN EMP
+          ON EMP.DEPTNO = DEPT.DEPTNO;
+    
+          오른쪽에 있는 EMP를 기준으로 조회
+          ```
        
    - CROSS JOIN
+     - 조건구 없이 2개의 테이블을 하나로 조인한다.
+     - 조인구가 없기 때문에 카테시안 곱이 발생한다.
+     - 행이 14개 있는 테이블과 행이 4개 있는 테이블을 조인하면 56개(14*4)의 행이 조회된다.
+     - FROM 절에 "CROSS JOIN" 구를 사용하면 된다.
+       ```
+       SELECT *
+       FROM EMP CROSS JOIN DEPT;
+
+       or
+
+       SELECT *
+       FROM EMP,DEPT
+       ```
+    
    - UNION을 사용한 합집합 구현
+     1) UNION
+     - 2개의 테이블을 하나로 만드는 연산이다.
+     - 두개의 테이블의 칼럼 수 ,칼럼의 데이터 형식 모두가 일치해야한다. 만약 다를시 오류가 발생한다.
+     - 합치면서 중복 데이터는 제거된다. 그리고 정렬(SORT)과정을 발생시킨다.
+       ```
+       SELECT DEPTNO FROM EMP
+       UNION
+       SELECT DEPTNO FROM EMP
+       ```
+     2) UNION ALL
+     - 2개의 테이블을 하나로 합친다.
+     - UNION과는 다르게 중복 제거, 정렬을 유발하지 않는다.
+    
+       ```
+       SELECT DEPTNO FROM EMP
+       UNION ALL
+       SELECT DEPTNO FROM EMP
+       ```
+       
    - 차집합을 만드는 MINUS
-     
+     - 2개의 테이블에서 차집합을 조회한다. 즉 먼저 쓴 SELECT문에는 있고 뒤에 쓰는 SELECT문에는 없는 집합을 조회한다.
 
 
 
