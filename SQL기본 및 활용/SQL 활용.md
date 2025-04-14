@@ -327,8 +327,8 @@
     ![image](https://github.com/user-attachments/assets/47e62384-5cb6-4951-8a48-6ea17f2725a0)
 
 
-3. 윈도우 함수(Window Function)
- 3-1. 윈도우 함수
+4. 윈도우 함수(Window Function)
+ 4-1. 윈도우 함수
  - 행과 행 간의 관계를 정의하기 위해서 제공되는 함수
  - 순위, 합계, 평균, 행 위치 등을 조작할수 있다.
 
@@ -381,7 +381,7 @@
     EMP 테이블을 조회하는데 EMPNO, ENAME, SAL 칼럼과 SUM함수를 통해 첫행부터 현재 행까지 오름차순으로 정렬한 값을 TOTSAL 컬럼에 반환 => 행 별로 누적 합계 계산
    ```
 
- 3-2. 순위함수(RANK Function)
+ 4-2. 순위함수(RANK Function)
   - 특정 항목과 파티션에 대해서 순위를 계산할수 잇는 함수를 제공
   - RANK, DDENSE_RANK, ROW_NUMBER 함수 있다.
 
@@ -404,14 +404,105 @@
 ex2)
 ![image](https://github.com/user-attachments/assets/0c77a7f5-93d4-4b07-b0d2-d4fdde02d7cc)
 
-3-3 집계 합수(AGGERGATE Function)
+4-3 집계 합수(AGGERGATE Function)
  - 윈도우 함수를 제공한다.
     - 집계(AGGERGATE)관련 윈도우 함수
     ● SUM : 파티션별로 합계를 계산
     ● AVG : 파티션별로 평균 계산
     ● COUNT : 파티션별로 행 수를 계산
     ● MAX와MIN : 파티션별로 최댓값과 최솟값 계산
+   ex)
+   ```
+   SELECT ENAME, SAL
+    SUM(SAL) OVER (PARTITION BY MGR) SUM MGR
+   FROM EMP;
+
+   EMP 테이블에서 ENMA,SAL을 조회하는데 SUM MGR이라는 컬럼의 이름을 생성한 뒤 MGR칼럼의 값으로 그룹화 하여 SUM(SAL)값을 계산한후 반환한다.
+   ```
+
+4-4 행 순서 관련 함수
+ - 상위 행의 값을 하위에 출력하거나 하위 행의 값을 상위 행에 출력할수 있다.
+ - 특정 위치의 행을 출력할수 있다.
    
+    - 행 순서 관련 윈도우 함수
+    ● FIRST_VALUE : 파티션에서 가장 처음에 나오는 값을 구한다. MIN함수를 사용해서 같은 결과를 구할수 있다.
+    ● LAST_VALUE : 파티션에서 가장 나중에 나오는 값을 구한다. MAX함수를 사용해서 같은 결과를 구할수 있다.
+    ● LAG : 이전 행을 가지고 온다.
+    ● LEAD : 윈도우에서 특정 위치의 행을 가지고 온다. 기본값은 1이다.
+   
+   ex) FIRST_VALUE
+   ```
+   SELECT DEPTNO, ENAME, SAL,
+   FIRST_VALUE(ENAME) OVER (PARTITION BY DEPTINO
+    ORDER BY SAL DESC ROWS UNBOUNDED PRECEDING) AS DEPT_A
+   FROM EMP;
+
+   EMP 테이블에서 DEPTNO, ENAME, SAL 조회한후 ENAME의 첫번째 행을 가지고 온 후 DEPTNO 파티션을 만들고 SAL을 기준으로 내림차순한 후 DEPT_A 컬럼의 첫번째 행으로 반환해라
+   ```
+   ![image](https://github.com/user-attachments/assets/1c90f041-d78b-4036-be92-3f54dd4d93f4)
+
+
+   ex) LAST_VALUE
+   ```
+   SELECT DEPTNO, ENAME, SAL,
+   LAST_VALUE(ENAME) OVER (PARTITION BY DEPTINO
+    ORDER BY SAL DESC ROWS UNBOUNDED CURRENT ROW AND UNBOUNDED FOLLOWING) AS DEPT_A
+   FROM EMP;
+
+   EMP 테이블에서 DEPTNO, ENAME, SAL을 조회한 후 ENAME의 마지막 행을 가지고 와서 EPTINO파티션을 만들고  현재행에서 마지막 행까지 조회한후SAL을 기준으로 내림차순한 현재의 값을  DEPT_A 컬럼의 첫번째 행으로반환해라
+   ```
+   ![image](https://github.com/user-attachments/assets/168c2f5f-8bc2-492d-896f-e59311715223)
+
+   ex) LAG
+   ```
+   SELECT DEPTNO, ENAME, SAL,
+   LAG(SAL) OVER(ORDER BY SAL DESC) AS PRE_SAL
+   FROM EMP;
+
+   EMP테이블에서 DEPTNO, ENAME, SAL 조회한후 PRE_SAL칼럼에 SAL값을 기준으로 내림차순한 후 각 행의 이전값을 현재 행에 값을 반환해라
+   ```
+   ![image](https://github.com/user-attachments/assets/f286d0e4-da19-4bee-8797-dc23c925be1e)
+
+   ex) LEAD
+   ```
+   SELECT DEPTNO, ENAME, SAL,
+   LEAD(SAL,2) OVER(ORDER BY SAL DESC) AS PRE_SAL
+   FROM EMP;
+
+   EMP 테이블에서 DETNO, ENAME, SAL 조회한 후 PRE_SAL 칼럼에 SAL값을 기준으로 내림차순한 후 각 행을 기준으로 2번째 이후의 값을 반환해라
+   ```
+![image](https://github.com/user-attachments/assets/7e02f3aa-1466-4a63-b56e-33015bd2ddff)
+
+4-5 비율 관련 함수
+ - 누적 백분율, 순서별 백분율, 파티션을 N분으로 분할한 결과 등을 조회할수 있다.
+   
+    - 비율 관련 윈도우 함수
+    ● CUME_DIST : 파티션 전체 건수에서 현재 행보다 작거나 같은 건수에 대한 누적 백분율을 조회한다. 누적 분포상에 위치를 0~1사이의 값을 가진다.
+    ● PERCENT_RANK : 파티션에서 제일 먼저 나온 것을 0으로 제일 늦게 나온 것을 1로 하여 값이 아닌 행의 순서별 백분율을 조회한다.
+    ● NTILE : 파티션별로 전체 건수를 ARGUMENT값으로 N등분한 결과를 조회한다.
+    ● RATIO_TO_REPORT : 파티션 내에 전체 SUM(칼럼)에 대한 행 별 칼럼값의 백분율을 소수점 까지 조회한다.
+ex)
+```
+SELECT DEPTNO, ENAMS, SAL,
+PERCENT_RANK() OVER (PARTITION BY DEPTNO
+    ORDER BY SAL DESC) AS PERCENT_SAL
+FROM EMP;
+
+EMP테이블에서 DEPTNO, ENAMS, SAL 조회한 후 DEPENO를 그룹화 하여 SAL로 내림차순 한 것을 PERCENT_SAL의 컬럼에 백분율로 반환한다.
+```
+![image](https://github.com/user-attachments/assets/dd09fc22-3900-480a-a445-f30f5ce2a9b3)
+
+```
+SELECT DEPTNO, ENAME, SAL,
+ NTILE(4), OVER(ORDER BY SAL DESC) AS N_TILE
+FROM EMP;
+
+EMP테이블에서 DEPTNO, ENAMS, SAL 조회한 후 SAL 값을 내림차순으로 정렬하고 N_TILE컬럼에 4개로 등분하여 분류한후 반환한다.
+```
+![image](https://github.com/user-attachments/assets/d38c25df-8020-43c1-a422-347bda4e3a16)
+
+
+
 
 4. Top N쿼리
 5. 계층형 조회(CONNECT BY)
