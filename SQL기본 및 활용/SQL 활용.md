@@ -1,5 +1,3 @@
-![image](https://github.com/user-attachments/assets/584bdb09-be45-4ba7-9e37-3b182d541a83)
-
 
 1. 서브쿼리(Subquery)
     - Main Query와 Subquery
@@ -329,10 +327,92 @@
     ![image](https://github.com/user-attachments/assets/47e62384-5cb6-4951-8a48-6ea17f2725a0)
 
 
-
-
-
 3. 윈도우 함수(Window Function)
+ 3-1. 윈도우 함수
+ - 행과 행 간의 관계를 정의하기 위해서 제공되는 함수
+ - 순위, 합계, 평균, 행 위치 등을 조작할수 있다.
+
+   - 윈도우 함수 구조
+   ```
+   SELECT WINDOW_FUNCTION(ARGUMENTS)
+           OVER([PARTITION BY 칼럼]
+                   [ORDER BY] [WINDOWING절])
+   FROM 테이블명;
+   - WINDOW_FUNCTION : 함수명 ( SUN, MAX, MIN, RANK .... )
+   - OVER : 분석함수임을 표시 
+   - PARTITION : 대상을 그룹화할 기준
+   - ORDER BY : 그룹에 대한 정렬 기준
+   - WINDOWING 절 : 분석함수의 대상이 되는 범위를 지정, ORDER BY 절에 종속적, 
+                    [ 기본 생략/DEFAULT ] 로 range between unbounded preceding and current row 실행
+                    -> 정렬된 결과의 처음부터 현재 행 까지
+   ```
+
+   ● ARGUMENTS(인수) : 윈도우 함수에 따라서 0~N개의 인수를 설정한다.
+   ● PARTITION BY : 전체 집합을 기준에 의해 소그룹으로 나누다.
+   ● ORDER BY : 어떤 항목에 대해서 정렬한다.
+   ● WINDOWING : 행 기준의 범위를 정한다. ROWS는 물리적 결과의 행 수이고 RANGE는 논리적인 값에 의한 범위이다.
+
+   - WINDOWING
+    ● ROWS : 부분적인 윈도우 크기를 물리적 단위로 행의 집합을 지정한다.
+    ● RANGE : 논리적인 주소에 의해 행 집합을 지정한다.
+    ● BETWEEN ~ AND : 윈도우의 시작과 끝의 위치를 지정한다.
+    ● UNBOUNDED PRECEDING : 윈도우의 시작 위치가 첫 번째 행임을 의미한다.
+    ● UNBOUDED FOLLOWING : 윈도우 마지막 위치가 마지막 행임을 의미한다.
+    ● CURRENT ROW : 윈도우 시작 위치가 현재 행임을 의미한다.
+
+
+   ex) WINDOWING
+   ```
+   SELECT EMPNO, ENAME, SAL,
+   SUM(SAL) OVER(ORDER BY SAL
+                   ROWS BETWEEN UNBOUNDED PRECEDING   -> 첫번째 행을 의미
+                   AND UNBOUNDED FOLLOWING) TOTSAL     -> 마지막 행을 의미
+   FROM EMP;
+
+   EMP 테이블을 조회하는데 EMPNO, ENAME, SAL 칼럼과 SUM함수를 통해 첫행부터 마지막 행까지 오름차순으로 정렬한 값을 TOTSAL 컬럼에 반환 => SAL의 전체 합계를 조회한다.
+   ```
+   ex) WINDOWING-1
+   ```
+   SELECT EMPNO, ENAME, SAL
+   SUM(SAL) OVER(ORDER BY SAL
+                   ROWS BETWEEN UNBOUNDED PRECEDING
+                   AND CURRENT ROW) TOTSAL
+
+    EMP 테이블을 조회하는데 EMPNO, ENAME, SAL 칼럼과 SUM함수를 통해 첫행부터 현재 행까지 오름차순으로 정렬한 값을 TOTSAL 컬럼에 반환 => 행 별로 누적 합계 계산
+   ```
+
+ 3-2. 순위함수(RANK Function)
+  - 특정 항목과 파티션에 대해서 순위를 계산할수 잇는 함수를 제공
+  - RANK, DDENSE_RANK, ROW_NUMBER 함수 있다.
+
+    - 순위(RANK) 관련 윈도우 함수
+    ● RANK : 특정항목 및 파티션에 대해서 순위를 계산한다. 동일한 순위는 동일한 값이 부여된다.
+    ● DENSE_RANK : 동일한 순위를 하나의 건수로 계산한다.
+    ● ROW_NUMER : 동일한 순위에 대해서 고유의 순위를 부여한다.
+   ex)
+   ```
+   SELECT ENAME, SAL,
+            RANK() OVER (ORDER BY SAL DESC) ALL RANK,
+            RANK() OVER (PARTITION BY JOB ORDER BY SAL
+                        DESC) JOB RANK
+   FROM EMP;
+
+   EMP테이블에서 ENAME, SAL 칼럼을 가지고 온후 SAL칼럼의 값을 순환하여 내림차순으로 정렬후 ALL RANK 칼럼을 만든곳에 반환한 후,
+                                               JOB의 칼럼으로 소그룹을 만든 후 SAL칼럼의 값을 순환하여 내림차순으로 정렬 후 JOB RANK칼럼에 값을 반환한다.
+   ```
+
+ex2)
+![image](https://github.com/user-attachments/assets/0c77a7f5-93d4-4b07-b0d2-d4fdde02d7cc)
+
+3-3 집계 합수(AGGERGATE Function)
+ - 윈도우 함수를 제공한다.
+    - 집계(AGGERGATE)관련 윈도우 함수
+    ● SUM : 파티션별로 합계를 계산
+    ● AVG : 파티션별로 평균 계산
+    ● COUNT : 파티션별로 행 수를 계산
+    ● MAX와MIN : 파티션별로 최댓값과 최솟값 계산
+   
+
 4. Top N쿼리
 5. 계층형 조회(CONNECT BY)
 6. PIVOT과 UNPIVOT
