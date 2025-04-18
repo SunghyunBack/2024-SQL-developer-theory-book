@@ -502,11 +502,190 @@ EMP테이블에서 DEPTNO, ENAMS, SAL 조회한 후 SAL 값을 내림차순으�
 ![image](https://github.com/user-attachments/assets/d38c25df-8020-43c1-a422-347bda4e3a16)
 
 
-
-
 4. Top N쿼리
-5. 계층형 조회(CONNECT BY)
-6. PIVOT과 UNPIVOT
-7. 테이블 파티션(Table Partition)
-8. 정규표현식(Regular Expression)
- 
+ 4-1. ROWNUM
+   - ORACLE 데이터베이스의 SELECT문 결과에 대해서 논리적인 일련번호를 부여한다.
+   - 조회되는 행 수를 제한할대 많이 사용된다.
+   - 환며에 데이터를 출력할 때 부여되는 논리적 순번이다. 페이지 단위 출력을 하기 위해서는 인라인뷰(Inline View)를 사용해야한다.
+
+ex)
+```
+SELECT *
+FROM EMP
+WHERE ROWNUM <=1;
+
+EMP 테이블을 조회하는데 1이하의 행을 조회한다.
+```
+
+ex) 인라인 뷰 (FROM 절에 SELECT문을 사용하는 경우)
+```
+SELECT *
+FROM (SELECT ROWNUM list, ENAME FROM EMP)
+WHERE list<=5;
+
+EMP테이블에서 ENAME과 LIST를를 조회할때 List를 기준으로 논리적인 일련번호를 부여해서 조회한수 list가 5개 이하의 행을 반환한다.
+```
+
+ 4-2. ROWID
+   - ORACLE 데이터베이스 내에서 데이터를 구분할 수 있는 유일한 값이다.
+   - "SELECT ROWID, EMPNO FROM EMP"와 같은 SELECT문으로 확인할수 있다.
+   - 데이터가 어떤 데이터 파일, 어느 블록에 저장되어 있는지 알수 있다.
+
+●ROWID구조
+|구조|길이|설명|
+|---|---|---|
+|오브젝트 번호|1~6|오브젝트(Object)별로 유일하 ㄴ값을  가지고 잇으며, 해당 오브젝트가 속해 있는 값이다.|
+|상대파일 번호|7~9|테이블스페이스(Tablespace)에 속해있는 데이터 파일ㅇ에 대한 상대 파일번호이다.|
+|블록 번호|10~15|데이터 파일 내부에서 어느 블록에 데이터가 있는지 알려준다.|
+|데이터 번호|16~18|데이터블록에 데이터가 저장되어 잇는 순서를 의미한다.|
+
+ex)
+```
+SELECT ROWID, winetypename
+FROM winetype;
+
+모든 테이블은 ROWID를 가지고 있다.
+```
+
+6. 계층형 조회(CONNECT BY)
+ - ORACLE 데이터베이스에서 지원하는 것으로 계층형으로 데이터를 조회할수 있따.
+
+예제
+
+![image](https://github.com/user-attachments/assets/fc84aa01-1c72-4940-8484-3d808e1068da)
+
+ex)
+```
+SELECT MAX(LEVEL)
+FROM Limbest.EMP
+START WITH MGR IS NULL
+CONNECT BY PRIOR EMPNO = MGR;
+```
+※참고사항
+- CONNECT BY는 트리(TREE)형태의 구조로 질의를 수행하는 것이며 START WITH구는 시작 조건을 의미하고 CONNECT BY PRIOR는 조인조건이다.
+ MAX(LEVEL)을 사용하여 최대 계층 수를 구할수 있다. 
+- PRIOR 키워드 : 바로직전에 출련된 행을 의미한다.
+
+● CONNECT BY 구조
+|키워드|설명|
+|---|---|
+|LEVEL|검색 항목의 깊이를 의미한다. 즉, 계층구조에서 가장 상위 레벨이 1이된다.|
+|CONNECT_BY_ROOT|계층 구조에서 가장 최상위 값을 표시한다.|
+|CONNECT_BY_ISLEAF|계층구조에서 갖아 최하위를 표시한다.|
+|SYS_CONNECT_BY_PATH|계층구조의 전체 전개 경로를 표시한다.|
+|NOCYCLE|순환 구조가 발생지점까지만 전개된다.|
+|CONNECT_BY_ISCYCLE|순환 구조 발생 지점을 표시한다.|
+
+※참고사항
+ - CONNECT BY구는 순방향 조회와 역방향 조회가 있다.
+ - 순방향 : 부모 엔티티로 부터 자식 엔티티를 찾아간다.
+ - 역방향 : 자식 엔티티로 부터 부모 엔티티를 찾아간다.
+
+
+● 계층현 조회
+|키워드|설명|
+|---|---|
+|START WITH 조건|계층 전개의 시작 위치를 지정하는것이다.|
+|PRIOR 자식 = 부모|부모에서 자식 방향으로 검색을 수행하는 순방향 전개이다.|
+|PRIOR 부모 = 자식|자식에서 부모방향으로 검색을 수행하는 역방향 전개이다.|
+|NOCYCLE|데이터를 전개하면서 이미 조회된 데이터를 다시 조회되면  CYCLE이 형성된다. 이때 NOCYCLE은 사이클이 발생되지 않게 한다.|
+|ORDER SIBLINGS BY 칼럼명|동일한 LEVEL인 형제노드 사이엥서 정령을 수행한다.|
+
+ex)순방향
+```
+SELECT LEVEL, LPAD(' ', 4*(LEVEL-1)) || EMPNO,
+        MGR, CONNECT_BY_ISFEAF ISLEAF
+FROM EMP
+START WITH MGR IS NULL
+CONNECT BY PRIOR EMPNO=MGR;
+```
+
+ex)역방향
+```
+
+SELECT LEVEL, LPAD(' ', 4*(LEVEL-1)) || EMPNO,
+        MGR, CONNECT_BY_ISFEAF ISLEAF
+FROM EMP
+START WITH EMPNO = 1008
+CONNECT BY PRIOR MGR = EMPNO;
+```
+
+7. PIVOT과 UNPIVOT
+ - 테이블에서 하나의 칼ㄹ럼에 잇는 행 값들을 펼쳐 각각을 하나의 칼럼으로 만들어 주는것이다.
+ - 데이터를 행기반에서 열기반으로 바꾸는 것이 PIVOT이고 다시 열기반에서 행기반으로 바꾸는것이 UNPIVOT이다.
+
+ex)
+```
+SELECT 상품명,[2023],[2024]
+FRON(SELECT 상품명, 수량, 주문연도 FROM주문) AS D
+    PIVOT(SUM(수량)FROM 주문연도 IN ([2023],[2024]) ) AS PVT;
+```
+
+![image](https://github.com/user-attachments/assets/548a8c90-edb8-4bd6-99ba-9eb82cf0ab8d)
+
+
+
+8. 테이블 파티션(Table Partition)
+ 8-1. Partiton 기능
+ - 대용량 테이블을 여러개의 데이터 파일에 분리해서 저장한다.
+ - 테이블의 데이터가 물리적으로 분리된 데이터 파일에 저장되면 입력, 수정, 삭제, 조회 성능이 향상된다.
+ - 파티션은 각각의 파티션 별로 독립적으로 관리될수 있다. 즉 파티션 별로 백업, 복구, 전용 인덱스 생성이 가능하다.
+ - ORACLE 데이터베이스의 논리적 관리 단위인 테이블 스페이스 간에 이동이 가능하다.
+ - 데이터를 조회할 때 데이터의 범위를 줄여서 성능을 향상시킨다.
+
+ 8-2. Range Partition
+  - 테이블의 칼럼 중에서 값의 범위를 기준으로 여러개의 파티션으로 데이터를 나누어 저장하는 것이다.
+
+ 8-3. List Partition
+ - 특정 값을 기준으로 분할하는 방법이다.
+
+ 8-4. Hash Partition
+ - 내부적으로 해시 함수를 사용해서 데이터를 분할한다.
+ - 결과적으로 데이터베이스 관리시스템이 알아서 분할하고 관리한다.
+
+ 8-5. 파티션 인덱스
+ - 4가지 유형의 인텍스를 제공한다. 즉 파티션 키를 사용해서 인덱스를 만드는 Prefixed Index와 해당 파티션만 사용하는 Local Index 등으로 나누어 진다.
+ - Oracle 데이터베이스는 Global Non-Prefixed를 지원하지 않는다.
+
+● 파티션 인덱스(Partition Index)
+|구분|중요내용|
+|---|---|
+|Global Index|여러 개의 파티션에서 하나의 인덱스를 사용한다.|
+|Local Index|해당 파티션 별로 각자의 인덱스를 사용한다.|
+|Prefixed Index|파티션 키와 인덱스 키가 동일하다.|
+|Non Prefixed Index|파티션 키와 인덱스 키가 다르다.|
+
+9. 정규표현식(Regular Expression)
+ - 특정한 규칙을 가지고 있는 문자열 집합을 표현하기 위해서 사용되는 형식 언어이다.
+ - 전화번호, 주민등록번호 등 특정 규칙을 가지고 잇는 데이터를 찾을 때 사용가능하다.
+ - SQL에서는 'regexp'를 사용하면 된다.
+
+● ORACLE 정규 표현식
+|구분|중요내용|
+|---|---|
+|REGEXP_LIKE|LIKE문과 유사하고 정규표현식을 검색한다.|
+|REGEXP_REPLACE|정규표현식을 검색한 후에 문자열을 변경한다.|
+|REGEXP_INSTR|정규표현식을 검색하고 위치를 반환한다.|
+|REGEXP_SUBSTR|정규표현식을 검색하고 문자열을 추출한다.|
+|REGEXP_COUNT|정규표현식을 검색하고 발견된 횟수를 반환한다.|
+
+● 정규 표현식을 사용하기 위한 메타문자
+|구분|의미|
+|---|---|
+|.|임의의 한 문자이다.|
+|?|앞 문자가 없거나 하나 있음을 의미한다(0또는1번 발생).|
+|+|앞 문자가 하나 이상 있음을 의미한다.|
+|*|앞 문자가 0개 이상있음을 의미한다.|
+|{m}|선행표현식이 정확히 m번 발생한다.|
+|{m,}|선행 표현식이 최소 m번 이상 발생한다.|
+|{m,n}|선형 표현식이 최소 m번이상, 최대 n번 이하 발생한다.|
+|[...]|괄호 안의 리스트에 있는 임의의 단일 문자와 일치한다.|
+|"|"| OR을 의미한다.|
+|^|문자열 시작 부분과 일치한다.|
+|[^]|해당 문자에 해당하지 않는 한 문자이다.|
+|$|문자열의 끝 부분과 일치한다.|
+|\| 표현식에서 후속 문자를 일반문자로 처리한다.|
+|\n|괄호 안에 그룹화된 n번째(1-9)선행ㅎ하위식과 일치한다.|
+|\d|숫자문자이다.|
+|[:class]|지정된 POSIX문자 클래스에 속한 임의의 문자와 일치한다. ex: ["alpha:"]["digit:"]등등|
+|[^:class]|괄호안의 리스트에 없는 임의의 단일 문자와 일치한다.|
